@@ -1,39 +1,252 @@
-version: 1
+version: 2
 paper: "Toward Diversified Graph Recommendation via Semantic and Topology Augmentation With LLMs"
+source_appendices:
+  - table: 12
+    dataset: ml-1m
+    title: "Prompts for augmentation (MovieLens-1M)"
+  - table: 13
+    dataset: steam
+    title: "Prompts for augmentation (Steam)"
+placeholder_style: "Python string.Template, using $field names normalized from the paper appendix placeholders."
 templates:
-  - name: user_persona_summary
+  - name: ml1m_user_contextual_summary
+    dataset: ml-1m
+    source_table: 12
+    process: "Contextual Summary Generation (User)"
+    output: "T_e^1 (User Persona)"
     entity_type: user
     purpose: semantic_embedding
+    input_metadata:
+      - age
+      - gender
+      - occupation
+      - top_movie_genres
+      - watched_movies
     template: |
-      Summarize this user's preferences as a concise recommendation persona.
-      Demographics: $demographics
-      High-rated items: $history
-      Frequent categories: $categories
-      Return a factual summary only.
-  - name: item_semantic_summary
+      Generate a brief 2-sentence user persona based on a user's age, gender, occupation, top movie genres, and movies watched.
+      The user is a $age year old $gender working as a $occupation.
+      They enjoy watching movies in the genres: $top_movie_genres.
+      The movies they have watched are: $watched_movies, ranked descendingly by their ratings.
+
+  - name: ml1m_item_contextual_summary
+    dataset: ml-1m
+    source_table: 12
+    process: "Contextual Summary Generation (Item)"
+    output: "T_e^1 (Item Excerpt)"
     entity_type: item
     purpose: semantic_embedding
+    input_metadata:
+      - movie_title
+      - genres
+      - summary
     template: |
-      Summarize the recommendation-relevant semantics of this item.
-      Title: $title
-      Categories: $categories
-      Description: $description
-      Visual cues: $visual_description
-      Return a concise item profile.
-  - name: proximal_category_identification
+      Make a 2-sentence, comprehensive synopsis based on the movie title, $movie_title, genres, $genres, and summary $summary.
+
+  - name: ml1m_item_visual_description
+    dataset: ml-1m
+    source_table: 12
+    process: "Visual Description Generation"
+    output: "T_e^v (Item Image Description)"
+    entity_type: item
+    purpose: visual_semantic_embedding
+    input_metadata:
+      - image
+    template: |
+      You are a person looking for a movie to watch by judging their movie posters.
+      You analyze and concisely describe the contents of a given movie poster.
+      Provide a concise 3-sentence description focusing on the main visual elements, colors, style, and mood of the poster and the overall theme or genre inferred from the design elements.
+
+  - name: ml1m_user_proximal_category_identification
+    dataset: ml-1m
+    source_table: 12
+    process: "Proximal Category Identification (User)"
+    output: "C_hat_e (User Proximal Categories)"
     entity_type: user
     purpose: topology_augmentation
+    input_metadata:
+      - persona
+      - genre_list
+      - watched_movies
+      - genres
     template: |
-      Given this user persona and existing preference categories, identify underrepresented but semantically adjacent categories.
-      Persona: $persona
-      Existing categories: $categories
-      Return category names only, ranked by relevance.
-  - name: proximal_entity_recommendation
+      You are a movie recommendation assistant.
+      Only recommend genres from the following list: $genre_list.
+      Provide exactly 5 genres that the user has not previously rated or watched.
+      Focus on suggesting genres that are diverse and differ from the user's usual preferences to broaden their viewing experience.
+      Output the genres as a python list without any additional text or explanations.
+      Based on the user's persona: $persona, their previously rated genres: $genres, and the movies they've watched: $watched_movies, recommend 5 new movie genres from the provided list.
+
+  - name: ml1m_item_proximal_category_identification
+    dataset: ml-1m
+    source_table: 12
+    process: "Proximal Category Identification (Item)"
+    output: "C_hat_e (Item Proximal Categories)"
+    entity_type: item
+    purpose: topology_augmentation
+    input_metadata:
+      - title
+      - overview
+      - genres
+      - all_genres
+    template: |
+      You are a movie enthusiast creating a diverse movie thread for others to binge on.
+      If you are to follow this movie $title with "$overview" as its plot and these: $genres as its genres, determine 3 other genres aside from those that would build up on this movie.
+      These are genres possible to recommend: $all_genres.
+      Output the 5 new genres to recommend as a list, no need to mention other details.
+
+  - name: ml1m_user_proximal_entity_recommendation
+    dataset: ml-1m
+    source_table: 12
+    process: "Proximal Entity Recommendation (User)"
+    output: "E_hat_e (User Proximal Items)"
     entity_type: user
     purpose: topology_augmentation
+    input_metadata:
+      - persona
+      - genres
+      - watched_movies
+      - rec_genres
+      - filtered_movies
     template: |
-      Recommend unseen items from the proximal categories while staying relevant to the user.
-      Persona: $persona
-      Proximal categories: $proximal_categories
-      Candidate items: $candidate_items
-      Return item identifiers only, ranked by relevance.
+      You are a movie recommendation assistant.
+      Your goal is to suggest a diverse set of movies to broaden the user's viewing experience.
+      Ensure that the recommended new movies span a variety of genres, themes, and styles and haven't been watched before.
+      Based on the user's persona: $persona, their previously rated genres: $genres, and the movies they've watched: $watched_movies, and their recommended genres $rec_genres, provide exactly 50 movie titles from this list $filtered_movies.
+
+  - name: ml1m_item_proximal_entity_recommendation
+    dataset: ml-1m
+    source_table: 12
+    process: "Proximal Entity Recommendation (Item)"
+    output: "E_hat_e (Item Proximal Items)"
+    entity_type: item
+    purpose: topology_augmentation
+    input_metadata:
+      - title
+      - overview
+      - genres
+      - prox_genres
+      - filtered_movies
+    template: |
+      You are a movie enthusiast creating a diverse movie thread for others to binge on.
+      If you are to follow this movie $title with "$overview" as its plot and these as its genres: $genres to pick the next movie on, determine the 50 best movies to watch next.
+      Select 10 movies from each genre: $prox_genres.
+      Make sure to only provide movies that are available from the $filtered_movies.
+
+  - name: steam_user_contextual_summary
+    dataset: steam
+    source_table: 13
+    process: "Contextual Summary Generation (User)"
+    output: "T_e^1 (User Persona)"
+    entity_type: user
+    purpose: semantic_embedding
+    input_metadata:
+      - top_game_genres
+      - played_games
+    template: |
+      Generate a brief 2-sentence user persona based on a user's top game genres and games played.
+      They enjoy playing games in the genres: $top_game_genres.
+      The games they have played are: $played_games, ranked descendingly by their ratings.
+
+  - name: steam_item_contextual_summary
+    dataset: steam
+    source_table: 13
+    process: "Contextual Summary Generation (Item)"
+    output: "T_e^1 (Item Excerpt)"
+    entity_type: item
+    purpose: semantic_embedding
+    input_metadata:
+      - game_title
+      - genres
+      - summary
+    template: |
+      Make a 2-sentence, comprehensive synopsis based on the game title, $game_title, genres, $genres, and summary $summary.
+
+  - name: steam_item_visual_description
+    dataset: steam
+    source_table: 13
+    process: "Visual Description Generation"
+    output: "T_e^v (Item Image Description)"
+    entity_type: item
+    purpose: visual_semantic_embedding
+    input_metadata:
+      - image
+    template: |
+      You are a person looking for a game to play by judging their game cover art.
+      You analyze and concisely describe the contents of a given game cover.
+      Provide a concise 3-sentence description focusing on the main visual elements, colors, style, and mood of the cover and the overall theme or genre inferred from the design elements.
+
+  - name: steam_user_proximal_category_identification
+    dataset: steam
+    source_table: 13
+    process: "Proximal Category Identification (User)"
+    output: "C_hat_e (User Proximal Categories)"
+    entity_type: user
+    purpose: topology_augmentation
+    input_metadata:
+      - persona
+      - genre_list
+      - played_games
+      - genres
+    template: |
+      You are a game recommendation assistant.
+      Only recommend genres from the following list: $genre_list.
+      Provide exactly 5 genres that the user has not previously rated or played.
+      Focus on suggesting genres that are diverse and differ from the user's usual preferences to broaden their gaming experience.
+      Output the genres as a python list without any additional text or explanations.
+      Based on the user's persona: $persona, their previously rated genres: $genres, and the games they've played: $played_games, recommend 5 new game genres from the provided list.
+
+  - name: steam_item_proximal_category_identification
+    dataset: steam
+    source_table: 13
+    process: "Proximal Category Identification (Item)"
+    output: "C_hat_e (Item Proximal Categories)"
+    entity_type: item
+    purpose: topology_augmentation
+    input_metadata:
+      - title
+      - overview
+      - genres
+      - all_genres
+    template: |
+      You are a game enthusiast creating a diverse game collection for others to explore.
+      If you are to follow this game $title with "$overview" as its plot and these: $genres as its genres, determine 3 other genres aside from those that would build up on this game.
+      These are genres possible to recommend: $all_genres.
+      Output the 5 new genres to recommend as a list, no need to mention other details.
+
+  - name: steam_user_proximal_entity_recommendation
+    dataset: steam
+    source_table: 13
+    process: "Proximal Entity Recommendation (User)"
+    output: "E_hat_e (User Proximal Items)"
+    entity_type: user
+    purpose: topology_augmentation
+    input_metadata:
+      - persona
+      - genres
+      - played_games
+      - rec_genres
+      - filtered_games
+    template: |
+      You are a game recommendation assistant.
+      Your goal is to suggest a diverse set of games to broaden the user's gaming experience.
+      Ensure that the recommended new games span a variety of genres, themes, and styles and haven't been played before.
+      Based on the user's persona: $persona, their previously rated genres: $genres, and the games they've played: $played_games, and their recommended genres $rec_genres, provide exactly 50 game titles from this list $filtered_games.
+
+  - name: steam_item_proximal_entity_recommendation
+    dataset: steam
+    source_table: 13
+    process: "Proximal Entity Recommendation (Item)"
+    output: "E_hat_e (Item Proximal Items)"
+    entity_type: item
+    purpose: topology_augmentation
+    input_metadata:
+      - title
+      - overview
+      - genres
+      - prox_genres
+      - filtered_games
+    template: |
+      You are a game enthusiast creating a diverse game bundle for others to enjoy.
+      If you are to bundle this game $title with "$overview" as its plot and these as its genres: $genres to select the next game on, determine the 50 best games to play next.
+      Select 10 games from each genre: $prox_genres.
+      Make sure to only provide games that are available from the $filtered_games.
