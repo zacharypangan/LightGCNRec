@@ -1,0 +1,31 @@
+experiment:
+  name: steam_topological
+dataset:
+  name: steam
+  interactions_path: data/steam/ratings_cleaned.csv
+  item_metadata_path: data/steam/games_cleaned.csv
+  user_col: user_id
+  item_col: app_id
+  rating_col: null
+  rating_threshold: null
+model:
+  name: lightgcn
+  embedding_dim: 64
+  num_layers: 3
+augmentation:
+  mode: topological
+  user_item_edges_path: data/steam/augmented_user_recommendations.csv
+  item_item_edges_path: data/steam/enhanced_game_recommendations.csv
+training:
+  seed: 42
+  device: cpu
+  epochs: 100
+  batch_size: 1024
+  lr: 0.001
+  lambda_reg: 0.0001
+  val_ratio: 0.1
+  test_ratio: 0.1
+evaluation:
+  k: 20
+output:
+  dir: outputs/steam_topological

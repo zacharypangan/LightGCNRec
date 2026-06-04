@@ -1,0 +1,39 @@
+version: 1
+paper: "Toward Diversified Graph Recommendation via Semantic and Topology Augmentation With LLMs"
+templates:
+  - name: user_persona_summary
+    entity_type: user
+    purpose: semantic_embedding
+    template: |
+      Summarize this user's preferences as a concise recommendation persona.
+      Demographics: $demographics
+      High-rated items: $history
+      Frequent categories: $categories
+      Return a factual summary only.
+  - name: item_semantic_summary
+    entity_type: item
+    purpose: semantic_embedding
+    template: |
+      Summarize the recommendation-relevant semantics of this item.
+      Title: $title
+      Categories: $categories
+      Description: $description
+      Visual cues: $visual_description
+      Return a concise item profile.
+  - name: proximal_category_identification
+    entity_type: user
+    purpose: topology_augmentation
+    template: |
+      Given this user persona and existing preference categories, identify underrepresented but semantically adjacent categories.
+      Persona: $persona
+      Existing categories: $categories
+      Return category names only, ranked by relevance.
+  - name: proximal_entity_recommendation
+    entity_type: user
+    purpose: topology_augmentation
+    template: |
+      Recommend unseen items from the proximal categories while staying relevant to the user.
+      Persona: $persona
+      Proximal categories: $proximal_categories
+      Candidate items: $candidate_items
+      Return item identifiers only, ranked by relevance.

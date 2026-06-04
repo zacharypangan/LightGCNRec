@@ -1,0 +1,32 @@
+cff-version: 1.2.0
+message: "If you use this code, please cite the associated IEEE Access paper."
+title: "Toward Diversified Graph Recommendation via Semantic and Topology Augmentation With LLMs"
+type: software
+authors:
+  - family-names: Pangan
+    given-names: Zachary S.
+  - family-names: Peng
+    given-names: Shaowen
+  - family-names: Wakamiya
+    given-names: Shoko
+  - family-names: Aramaki
+    given-names: Eiji
+doi: 10.1109/ACCESS.2025.3637140
+year: 2025
+license: MIT
+repository-code: "https://github.com/zacpangan/LightGCNRec"
+preferred-citation:
+  type: article
+  title: "Toward Diversified Graph Recommendation via Semantic and Topology Augmentation With LLMs"
+  authors:
+    - family-names: Pangan
+      given-names: Zachary S.
+    - family-names: Peng
+      given-names: Shaowen
+    - family-names: Wakamiya
+      given-names: Shoko
+    - family-names: Aramaki
+      given-names: Eiji
+  journal: IEEE Access
+  year: 2025
+  doi: 10.1109/ACCESS.2025.3637140

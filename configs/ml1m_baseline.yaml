@@ -1,0 +1,29 @@
+experiment:
+  name: ml1m_baseline
+dataset:
+  name: ml-1m
+  interactions_path: data/ml-1m/ratings_filtered.csv
+  item_metadata_path: data/ml-1m/movies_augmented.csv
+  user_col: userId
+  item_col: movieId
+  rating_col: rating
+  rating_threshold: 4.0
+model:
+  name: lightgcn
+  embedding_dim: 64
+  num_layers: 3
+augmentation:
+  mode: none
+training:
+  seed: 42
+  device: cpu
+  epochs: 100
+  batch_size: 1024
+  lr: 0.001
+  lambda_reg: 0.0001
+  val_ratio: 0.1
+  test_ratio: 0.1
+evaluation:
+  k: 20
+output:
+  dir: outputs/ml1m_baseline
